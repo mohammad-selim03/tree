@@ -1,172 +1,124 @@
-import Link from 'next/link';
-import './trees.css';
+"use client"
 
-export const metadata = {
-  title: 'Browse Trees - TreeVerse',
-  description: 'Explore our collection of premium trees and plants.',
-};
+import { useState } from "react"
+import Link from "next/link"
+import { Search, SlidersHorizontal } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ProductFilters } from "@/components/features/products/ProductFilters"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { formatPrice } from "@/lib/utils"
 
-// This would come from the API in a real app
-const featuredTrees = [
-  {
-    id: '1',
-    name: 'Japanese Maple',
-    category: 'Ornamental',
-    price: 149.99,
-    seller: 'Green Gardens',
-    rating: 4.8,
-    image: '🍁',
-  },
-  {
-    id: '2',
-    name: 'Blue Spruce',
-    category: 'Evergreen',
-    price: 89.99,
-    seller: 'Mountain Nursery',
-    rating: 4.9,
-    image: '🌲',
-  },
-  {
-    id: '3',
-    name: 'Apple Tree',
-    category: 'Fruit',
-    price: 129.99,
-    seller: 'Orchard Experts',
-    rating: 4.7,
-    image: '🍎',
-  },
-  {
-    id: '4',
-    name: 'Red Oak',
-    category: 'Shade',
-    price: 199.99,
-    seller: 'Oak Valley',
-    rating: 4.9,
-    image: '🌳',
-  },
-  {
-    id: '5',
-    name: 'Cherry Blossom',
-    category: 'Ornamental',
-    price: 179.99,
-    seller: 'Blossom Dreams',
-    rating: 5.0,
-    image: '🌸',
-  },
-  {
-    id: '6',
-    name: 'Pine Tree',
-    category: 'Evergreen',
-    price: 69.99,
-    seller: 'Forest Fresh',
-    rating: 4.6,
-    image: '🌲',
-  },
-];
+// Mock data
+const products = [
+  { id: '1', name: 'Japanese Maple', price: 149.99, image: '🍁', rating: 4.8, category: 'Ornamental' },
+  { id: '2', name: 'Blue Spruce', price: 89.99, image: '🌲', rating: 4.9, category: 'Evergreen' },
+  { id: '3', name: 'Apple Tree', price: 129.99, image: '🍎', rating: 4.7, category: 'Fruit' },
+  { id: '4', name: 'Red Oak', price: 199.99, image: '🌳', rating: 4.9, category: 'Shade' },
+  { id: '5', name: 'Cherry Blossom', price: 179.99, image: '🌸', rating: 5.0, category: 'Ornamental' },
+  { id: '6', name: 'Pine Tree', price: 69.99, image: '🌲', rating: 4.6, category: 'Evergreen' },
+]
 
 export default function TreesPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
-    <div className="trees-container">
-      {/* Page Header */}
-      <section className="trees-header">
-        <h1>Browse Our Collection</h1>
-        <p>Discover premium trees and plants from verified sellers</p>
-      </section>
+    <div className="container py-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">All Trees</h1>
+          <p className="text-muted-foreground">
+            Browse our collection of premium trees
+          </p>
+        </div>
 
-      {/* Filters */}
-      <section className="filters-section">
-        <div className="filters-container">
-          <div className="filter-group">
-            <label>Category</label>
-            <select className="filter-select">
-              <option value="">All Categories</option>
-              <option value="fruit">Fruit Trees</option>
-              <option value="ornamental">Ornamental</option>
-              <option value="evergreen">Evergreen</option>
-              <option value="shade">Shade Trees</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Price Range</label>
-            <select className="filter-select">
-              <option value="">Any Price</option>
-              <option value="0-100">$0 - $100</option>
-              <option value="100-200">$100 - $200</option>
-              <option value="200+">$200+</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Sort By</label>
-            <select className="filter-select">
-              <option value="popular">Most Popular</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Highest Rated</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <input 
-              type="search" 
-              placeholder="Search trees..." 
-              className="search-input"
+        <div className="flex items-center gap-2">
+          <div className="relative w-full md:w-[300px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search trees..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-        </div>
-      </section>
 
-      {/* Products Grid */}
-      <section className="products-section">
-        <div className="products-grid">
-          {featuredTrees.map((tree) => (
-            <Link 
-              href={`/trees/${tree.id}`} 
-              key={tree.id}
-              className="product-card"
-            >
-              <div className="product-image">
-                <span className="product-icon">{tree.image}</span>
-                <span className="product-category">{tree.category}</span>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden">
+                <SlidersHorizontal className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Filters</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">
+                <ProductFilters />
               </div>
-              
-              <div className="product-info">
-                <h3 className="product-name">{tree.name}</h3>
-                
-                <div className="product-meta">
-                  <span className="product-seller">
-                    <span className="seller-icon">🏪</span>
-                    {tree.seller}
-                  </span>
-                  <span className="product-rating">
-                    <span className="star">⭐</span>
-                    {tree.rating}
-                  </span>
-                </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
 
-                <div className="product-footer">
-                  <span className="product-price">${tree.price}</span>
-                  <button className="btn-add-to-cart">View Details</button>
-                </div>
-              </div>
-            </Link>
-          ))}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="hidden md:block">
+          <ProductFilters />
         </div>
 
-        {/* Load More */}
-        <div className="load-more">
-          <button className="btn-load-more">Load More Trees</button>
+        <div className="md:col-span-3">
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">🌳</div>
+              <h3 className="text-lg font-medium">No trees found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your search or filters
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/trees/${product.id}`}
+                  className="group block bg-card rounded-xl border overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
+                >
+                  <div className="aspect-square bg-muted flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-500">
+                    {product.image}
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        {product.category}
+                      </span>
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        ⭐ {product.rating}
+                      </span>
+                    </div>
+                    <h3 className="font-bold mb-2 group-hover:text-green-600 transition-colors">
+                      {product.name}
+                    </h3>
+                    <div className="font-medium text-lg">
+                      {formatPrice(product.price)}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-      </section>
-
-      {/* Empty State (hidden when there are results) */}
-      <section className="empty-state" style={{ display: 'none' }}>
-        <div className="empty-icon">🌳</div>
-        <h2>No trees found</h2>
-        <p>Try adjusting your filters or search terms</p>
-        <button className="btn-clear-filters">Clear All Filters</button>
-      </section>
+      </div>
     </div>
-  );
+  )
 }
