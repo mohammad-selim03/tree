@@ -26,6 +26,13 @@ export class User {
         return new User(props);
     }
 
+    /**
+     * Reconstitute a User from persistence (database)
+     */
+    public static reconstitute(props: UserProps): User {
+        return new User(props);
+    }
+
     get id(): string {
         return this.props.id;
     }
@@ -38,7 +45,30 @@ export class User {
         return this.props.role;
     }
 
+    get createdAt(): Date {
+        return this.props.createdAt;
+    }
+
+    get updatedAt(): Date {
+        return this.props.updatedAt;
+    }
+
     public isAdmin(): boolean {
         return this.props.role === UserRole.ADMIN;
+    }
+
+    public isSeller(): boolean {
+        return this.props.role === UserRole.SELLER;
+    }
+
+    public isBuyer(): boolean {
+        return this.props.role === UserRole.BUYER;
+    }
+
+    /**
+     * Allow accessing props for persistence (used by repositories)
+     */
+    public getProps(): UserProps {
+        return { ...this.props };
     }
 }

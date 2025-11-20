@@ -13,6 +13,10 @@
   "dependencies": {
     "@repo/ui": "*",
     "@repo/database": "*",
+    "@repo/core": "*",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
     "next": "^16.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
@@ -20,6 +24,8 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
