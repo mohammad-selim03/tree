@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Package, ChevronRight } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
 import {
     Card,
     CardContent,
@@ -9,94 +10,167 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { formatPrice, formatDate } from "@/lib/utils"
+import { TableRowSkeleton } from "@/components/ui/skeleton"
+import { ErrorState } from "@/components/ErrorBoundary"
+import { useOrders, mockOrders, type Order } from "@/lib/hooks/queries/useOrders"
 
-// Mock data
-const orders = [
-    {
-        id: "ORD-1234",
-        date: "2023-11-15T10:00:00Z",
-        total: 239.98,
-        status: "delivered",
-        items: [
-            { name: "Japanese Maple", quantity: 1 },
-            { name: "Blue Spruce", quantity: 1 },
-        ],
-    },
-    {
-        id: "ORD-5678",
-        date: "2023-11-18T14:30:00Z",
-        total: 129.99,
-        status: "processing",
-        items: [
-            { name: "Apple Tree", quantity: 1 },
-        ],
-    },
-]
+function getStatusVariant(status: Order['status']) {
+    switch (status) {
+        case 'delivered':
+            return 'default' as const
+        case 'processing':
+        case 'shipped':
+            return 'secondary' as const
+        case 'cancelled':
+            return 'destructive' as const
+        default:
+            return 'outline' as const
+    }
+}
+
+function getStatusColor(status: Order['status']) {
+    switch (status) {
+        case 'delivered':
+            return 'text-green-600'
+        case 'processing':
+            return 'text-blue-600'
+        case 'shipped':
+            return 'text-purple-600'
+        case 'pending':
+            return 'text-yellow-600'
+        case 'cancelled':
+            return 'text-red-600'
+        default:
+            return 'text-gray-600'
+    }
+}
 
 export default function OrdersPage() {
+    const { data, isLoading, isError, error, refetch } = useOrders()
+
+    // Use actual data if available, fallback to mock data
+    const orders = data?.orders || mockOrders
+    const usesMockData = !data
+
     return (
         <div className="container py-10 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-8">Order History</h1>
-
-            <div className="space-y-6">
-                {orders.map((order) => (
-                    <Card key={order.id}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <div className="space-y-1">
-                                <CardTitle className="text-base">Order #{order.id}</CardTitle>
-                                <CardDescription>{formatDate(order.date)}</CardDescription>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="font-bold text-lg">{formatPrice(order.total)}</div>
-                                <Badge
-                                    variant={order.status === 'delivered' ? 'default' : 'secondary'}
-                                    className={order.status === 'delivered' ? 'bg-green-600 hover:bg-green-700' : ''}
-                                >
-                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                </Badge>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mt-4 space-y-4">
-                                {order.items.map((item, index) => (
-                                    <div key={index} className="flex items-center gap-4 text-sm">
-                                        <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
-                                            <Package className="h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-medium">{item.name}</div>
-                                            <div className="text-muted-foreground">Qty: {item.quantity}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                                <div className="pt-4 flex justify-end">
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link href={`/orders/${order.id}`}>
-                                            View Details <ChevronRight className="ml-2 h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-
-                {orders.length === 0 && (
-                    <div className="text-center py-12">
-                        <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-medium">No orders yet</h3>
-                        <p className="text-muted-foreground mb-4">
-                            Start shopping to see your orders here
-                        </p>
-                        <Button asChild>
-                            <Link href="/trees">Browse Trees</Link>
-                        </Button>
-                    </div>
-                )}
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold">Order History</h1>
+                <p className="text-muted-foreground">
+                    View and track your orders
+                    {usesMockData && (
+                        <span className="ml-2 text-xs text-yellow-600 dark:text-yellow-400">
+                            (Using mock data - backend not connected)
+                        </span>
+                    )}
+                </p>
             </div>
+
+            {isError ? (
+                <ErrorState
+                    title="Failed to load orders"
+                    message={error?.message || "Unable to fetch your order history"}
+                    onRetry={() => refetch()}
+                />
+            ) : isLoading ? (
+                <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i}>
+                            <CardContent className="p-6">
+                                <TableRowSkeleton columns={4} />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            ) : orders.length === 0 ? (
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                        <div className="text-4xl mb-4">📦</div>
+                        <h3 className="text-lg font-medium">No orders yet</h3>
+                        <p className="text-muted-foreground text-center mb-4">
+                            You haven't placed any orders yet
+                        </p>
+                        <Link
+                            href="/trees"
+                            className="text-green-600 hover:text-green-500 font-medium"
+                        >
+                            Start shopping
+                        </Link>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div className="space-y-4">
+                    {orders.map((order) => (
+                        <Card key={order.id} className="hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <CardTitle className="text-lg">
+                                            Order #{order.orderNumber}
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Placed on {new Date(order.date).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </CardDescription>
+                                    </div>
+                                    <Badge variant={getStatusVariant(order.status)}>
+                                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {/* Order Items */}
+                                    <div className="space-y-2">
+                                        {order.items.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="flex items-center justify-between text-sm"
+                                            >
+                                                <div>
+                                                    <span className="font-medium">{item.productName}</span>
+                                                    <span className="text-muted-foreground ml-2">
+                                                        × {item.quantity}
+                                                    </span>
+                                                </div>
+                                                <span>{formatPrice(item.price)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Shipping Address */}
+                                    <div className="pt-3 border-t text-sm">
+                                        <p className="text-muted-foreground">Shipping to:</p>
+                                        <p className="font-medium">
+                                            {order.shippingAddress.street}, {order.shippingAddress.city},{' '}
+                                            {order.shippingAddress.state} {order.shippingAddress.zip}
+                                        </p>
+                                    </div>
+
+                                    {/* Total */}
+                                    <div className="flex items-center justify-between pt-3 border-t font-semibold">
+                                        <span>Total</span>
+                                        <span className="text-lg">{formatPrice(order.total)}</span>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex gap-2 pt-2">
+                                        <Link
+                                            href={`/orders/${order.id}`}
+                                            className="text-sm text-green-600 hover:text-green-500 font-medium"
+                                        >
+                                            View Details →
+                                        </Link>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

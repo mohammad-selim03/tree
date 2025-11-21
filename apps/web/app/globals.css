@@ -112,6 +112,25 @@ body {
 }
 
 /* =================================
+   Animation Delay Utilities
+   ================================= */
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* =================================
    Lenis Smooth Scroll Styles
    ================================= */
 html.lenis,

@@ -11,6 +11,10 @@
  * const listings = await api.listings.search(filters);
  */
 
+import { authApi } from './endpoints/auth';
+import { listingsApi } from './endpoints/listings';
+import { ordersApi } from './endpoints/orders';
+
 export { httpClient } from './client';
 export { authApi } from './endpoints/auth';
 export { listingsApi } from './endpoints/listings';

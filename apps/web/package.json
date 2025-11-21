@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
+    "dev:api": "node dev-api.js",
+    "dev:all": "start npm run dev:api && npm run dev",
+    "prisma:generate": "cd ../../packages/database && npx prisma generate",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",

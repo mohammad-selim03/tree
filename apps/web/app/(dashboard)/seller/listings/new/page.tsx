@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -28,10 +27,11 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { listingSchema, ListingFormData } from "@/lib/validations/listing"
+import { useCreateListing } from "@/lib/hooks/queries/useListings"
 
 export default function CreateListingPage() {
     const router = useRouter()
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { mutate: createListing, isPending } = useCreateListing()
 
     const {
         register,
@@ -46,16 +46,16 @@ export default function CreateListingPage() {
         },
     })
 
-    const onSubmit = async (data: ListingFormData) => {
-        setIsSubmitting(true)
-
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        console.log("Submitting listing:", data)
-        toast.success("Listing created successfully!")
-        setIsSubmitting(false)
-        router.push("/seller/listings")
+    const onSubmit = (data: ListingFormData) => {
+        createListing(data as any, {
+            onSuccess: () => {
+                toast.success("Listing created successfully!")
+                router.push("/seller/listings")
+            },
+            onError: (error) => {
+                toast.error(error.message || "Failed to create listing")
+            },
+        })
     }
 
     return (
@@ -230,9 +230,9 @@ export default function CreateListingPage() {
                             <Button
                                 type="submit"
                                 className="w-full bg-green-600 hover:bg-green-700"
-                                disabled={isSubmitting}
+                                disabled={isPending}
                             >
-                                {isSubmitting ? (
+                                {isPending ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                         Creating...

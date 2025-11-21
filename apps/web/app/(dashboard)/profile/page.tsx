@@ -18,86 +18,179 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { useAuthStore } from "@/lib/stores/authStore"
+import { useUpdateProfile, useChangePassword } from "@/lib/hooks/queries/useProfile"
+import { useMe } from "@/lib/hooks/queries/useAuth"
 
 const profileSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    currentPassword: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal("")),
-    newPassword: z.string().min(6, "Password must be at least 6 characters").optional().or(z.literal("")),
+})
+
+const passwordSchema = z.object({
+    currentPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 })
 
 type ProfileFormData = z.infer<typeof profileSchema>
+type PasswordFormData = z.infer<typeof passwordSchema>
 
 export default function ProfilePage() {
     const { user } = useAuthStore()
+    const { data: currentUser } = useMe()
+    const { mutate: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile()
+    const { mutate: changePassword, isPending: isChangingPassword } = useChangePassword()
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<ProfileFormData>({
+    // Profile form
+    const profileForm = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            name: user?.name || "",
-            email: user?.email || "",
+            name: currentUser?.name || user?.name || "",
+            email: currentUser?.email || user?.email || "",
         },
     })
 
-    const onSubmit = async (data: ProfileFormData) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        toast.success("Profile updated successfully")
+    // Password form
+    const passwordForm = useForm<PasswordFormData>({
+        resolver: zodResolver(passwordSchema),
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        },
+    })
+
+    const onProfileSubmit = (data: ProfileFormData) => {
+        updateProfile(data, {
+            onSuccess: () => {
+                toast.success("Profile updated successfully")
+            },
+            onError: (error) => {
+                toast.error(error.message || "Failed to update profile")
+            },
+        })
+    }
+
+    const onPasswordSubmit = (data: PasswordFormData) => {
+        changePassword(data, {
+            onSuccess: () => {
+                toast.success("Password changed successfully")
+                passwordForm.reset()
+            },
+            onError: (error) => {
+                toast.error(error.message || "Failed to change password")
+            },
+        })
     }
 
     return (
         <div className="container py-10 max-w-2xl">
             <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Personal Information</CardTitle>
-                        <CardDescription>
-                            Update your personal details and password
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input id="name" {...register("name")} />
-                            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email Address</Label>
-                            <Input id="email" type="email" {...register("email")} />
-                            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-                        </div>
-
-                        <div className="pt-4 border-t mt-4">
-                            <h3 className="text-sm font-medium mb-4">Change Password</h3>
-                            <div className="grid gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="currentPassword">Current Password</Label>
-                                    <Input id="currentPassword" type="password" {...register("currentPassword")} />
-                                    {errors.currentPassword && <p className="text-sm text-red-500">{errors.currentPassword.message}</p>}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="newPassword">New Password</Label>
-                                    <Input id="newPassword" type="password" {...register("newPassword")} />
-                                    {errors.newPassword && <p className="text-sm text-red-500">{errors.newPassword.message}</p>}
-                                </div>
+            <div className="space-y-6">
+                {/* Profile Information */}
+                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Personal Information</CardTitle>
+                            <CardDescription>
+                                Update your personal details
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Full Name</Label>
+                                <Input id="name" {...profileForm.register("name")} />
+                                {profileForm.formState.errors.name && (
+                                    <p className="text-sm text-red-500">
+                                        {profileForm.formState.errors.name.message}
+                                    </p>
+                                )}
                             </div>
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Changes
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </form>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email Address</Label>
+                                <Input id="email" type="email" {...profileForm.register("email")} />
+                                {profileForm.formState.errors.email && (
+                                    <p className="text-sm text-red-500">
+                                        {profileForm.formState.errors.email.message}
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" disabled={isUpdatingProfile}>
+                                {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Changes
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </form>
+
+                {/* Change Password */}
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Change Password</CardTitle>
+                            <CardDescription>
+                                Update your account password
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Input
+                                    id="currentPassword"
+                                    type="password"
+                                    {...passwordForm.register("currentPassword")}
+                                />
+                                {passwordForm.formState.errors.currentPassword && (
+                                    <p className="text-sm text-red-500">
+                                        {passwordForm.formState.errors.currentPassword.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="newPassword">New Password</Label>
+                                <Input
+                                    id="newPassword"
+                                    type="password"
+                                    {...passwordForm.register("newPassword")}
+                                />
+                                {passwordForm.formState.errors.newPassword && (
+                                    <p className="text-sm text-red-500">
+                                        {passwordForm.formState.errors.newPassword.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    {...passwordForm.register("confirmPassword")}
+                                />
+                                {passwordForm.formState.errors.confirmPassword && (
+                                    <p className="text-sm text-red-500">
+                                        {passwordForm.formState.errors.confirmPassword.message}
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button type="submit" disabled={isChangingPassword}>
+                                {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Change Password
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </form>
+            </div>
         </div>
     )
 }

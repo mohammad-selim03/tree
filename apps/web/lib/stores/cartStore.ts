@@ -95,7 +95,7 @@ export const useCartStore = create<CartState>()(
                     const grouped = new Map<string, CartItem[]>();
 
                     items.forEach((item) => {
-                        const seller Items = grouped.get(item.sellerId) || [];
+                        const sellerItems = grouped.get(item.sellerId) || [];
                         sellerItems.push(item);
                         grouped.set(item.sellerId, sellerItems);
                     });

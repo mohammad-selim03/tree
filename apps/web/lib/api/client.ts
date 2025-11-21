@@ -48,11 +48,58 @@ export class HTTPClient {
     private baseURL: string;
     private defaultHeaders: HeadersInit;
     private timeout: number;
+    private refreshingToken: Promise<string | null> | null = null;
 
     constructor(config: HTTPClientConfig) {
         this.baseURL = config.baseURL;
         this.defaultHeaders = config.headers || {};
         this.timeout = config.timeout || 30000; // 30 seconds default
+    }
+
+    /**
+     * Refresh the authentication token
+     */
+    private async refreshToken(): Promise<string | null> {
+        // Prevent multiple simultaneous refresh requests
+        if (this.refreshingToken) {
+            return this.refreshingToken;
+        }
+
+        this.refreshingToken = (async () => {
+            try {
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (!refreshToken) return null;
+
+                const response = await fetch(`${this.baseURL}/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refreshToken }),
+                });
+
+                if (!response.ok) {
+                    // Refresh failed, clear tokens
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('refresh_token');
+                    return null;
+                }
+
+                const data = await response.json();
+                const newToken = data.data?.token || data.token;
+
+                if (newToken) {
+                    localStorage.setItem('auth_token', newToken);
+                }
+
+                return newToken;
+            } catch (error) {
+                console.error('Token refresh failed:', error);
+                return null;
+            } finally {
+                this.refreshingToken = null;
+            }
+        })();
+
+        return this.refreshingToken;
     }
 
     /**
@@ -85,12 +132,15 @@ export class HTTPClient {
     }
 
     /**
-     * Make HTTP request with timeout and error handling
+     * Make HTTP request with timeout, retry, and error handling
      */
     private async request<T>(
         endpoint: string,
-        config?: RequestConfig
+        config?: RequestConfig & { _retryCount?: number }
     ): Promise<Result<T>> {
+        const retryCount = config?._retryCount || 0;
+        const maxRetries = 3;
+
         try {
             // Create abort controller for timeout
             const controller = new AbortController();
@@ -108,9 +158,46 @@ export class HTTPClient {
 
             clearTimeout(timeoutId);
 
+            // Handle 401 Unauthorized - try token refresh
+            if (response.status === 401 && !config?.skipAuth && retryCount === 0) {
+                const newToken = await this.refreshToken();
+
+                if (newToken) {
+                    // Retry the request with new token
+                    return this.request<T>(endpoint, {
+                        ...config,
+                        _retryCount: retryCount + 1,
+                    });
+                } else {
+                    // Token refresh failed, redirect to login
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/login';
+                    }
+                    return {
+                        success: false,
+                        error: {
+                            message: 'Session expired. Please log in again.',
+                            code: 'UNAUTHORIZED',
+                            status: 401,
+                        },
+                    };
+                }
+            }
+
             // Handle non-OK responses
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+
+                // Retry on server errors (5xx) with exponential backoff
+                if (response.status >= 500 && retryCount < maxRetries) {
+                    const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                    await new Promise(resolve => setTimeout(resolve, delay));
+
+                    return this.request<T>(endpoint, {
+                        ...config,
+                        _retryCount: retryCount + 1,
+                    });
+                }
 
                 return {
                     success: false,
@@ -144,6 +231,17 @@ export class HTTPClient {
                 data: data.data || data,
             };
         } catch (error) {
+            // Retry on network errors with exponential backoff
+            if (retryCount < maxRetries && error instanceof Error && error.name !== 'AbortError') {
+                const delay = Math.pow(2, retryCount) * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+
+                return this.request<T>(endpoint, {
+                    ...config,
+                    _retryCount: retryCount + 1,
+                });
+            }
+
             // Handle network errors
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {

@@ -16,6 +16,11 @@ const LoginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+// Handle CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Parse and validate request body

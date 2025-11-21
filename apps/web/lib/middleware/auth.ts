@@ -41,6 +41,12 @@ export async function authenticateRequest(
       role: payload.role,
     };
   } catch (error) {
+    console.error('Auth Middleware Error:', error);
+    // Debug: Check if secret is loaded
+    if (!process.env.JWT_SECRET) {
+      console.error('CRITICAL: JWT_SECRET is missing in environment variables!');
+    }
+
     if (error instanceof Error) {
       throw new Error(`Authentication failed: ${error.message}`);
     }
@@ -56,6 +62,7 @@ export function requireRole(allowedRoles: string[]) {
     const user = await authenticateRequest(request);
 
     if (!allowedRoles.includes(user.role)) {
+      console.error(`Role mismatch: User role '${user.role}' is not in allowed roles: ${allowedRoles.join(', ')}`);
       throw new Error(
         `Forbidden: Requires one of the following roles: ${allowedRoles.join(', ')}`
       );
