@@ -25,7 +25,7 @@ export interface OrderProps {
   orderNumber: OrderNumber;
   buyerId: string;
   sellerId: string;
-  items: Order Item[];
+  items: OrderItem[];
   totalAmount: Money;
   shippingAddress: ShippingAddress;
   status: OrderStatus;

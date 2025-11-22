@@ -307,6 +307,55 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Our Best 02 Section */}
+      <section className="py-24 px-8 bg-[#0f1f0f]">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header with Brackets */}
+          <div className="flex justify-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-medium text-center relative inline-block px-8">
+              <span className="absolute -top-2 -left-4 w-8 h-8 border-t-2 border-l-2 border-[#4a7c2d]"></span>
+              Our Best 02
+              <span className="absolute -top-2 -right-4 w-8 h-8 border-t-2 border-r-2 border-[#4a7c2d]"></span>
+            </h2>
+          </div>
+
+          {/* Large Feature Card */}
+          <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-[4rem] p-12 md:p-16 shadow-2xl overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Left: Plant Image */}
+              <div className="relative flex justify-center">
+                <div className="text-[20rem] drop-shadow-2xl animate-float">
+                  🌿
+                </div>
+              </div>
+
+              {/* Right: Content */}
+              <div className="space-y-6">
+                <h3 className="text-4xl md:text-5xl font-medium leading-tight">
+                  We Have Small Best 02 plants collection,s
+                </h3>
+                
+                <div className="space-y-4 text-white/60 leading-relaxed">
+                  <p>
+                    Lorem ipsum dolor sit amet consectetur adipisching elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  </p>
+                  <p>
+                    Lorem ipsum dolor sit amet consectetur adipisching elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between pt-6">
+                  <button className="px-10 py-3 border border-white/30 rounded-lg hover:bg-white hover:text-[#0f1f0f] transition-all duration-300 font-medium">
+                    Explore
+                  </button>
+                  <span className="text-white/40 text-sm">(01/04)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 px-8 bg-[#f8faf6] text-[#1a2f1a]">
         <h2 className="text-4xl font-bold text-center mb-16 text-[#2d5016]">Why Choose TreeVerse?</h2>
