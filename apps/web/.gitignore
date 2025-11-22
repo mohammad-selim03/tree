@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.pnpm-store
 
 # testing
 /coverage
@@ -26,7 +27,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # env files (can opt-in for commiting if needed)
+# env files (can opt-in for commiting if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel

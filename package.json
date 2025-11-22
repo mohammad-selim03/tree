@@ -16,14 +16,5 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@10.9.2",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "dependencies": {
-    "@tailwindcss/postcss": "^4.1.17",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.17"
-  }
+  "packageManager": "pnpm@9.15.3"
 }

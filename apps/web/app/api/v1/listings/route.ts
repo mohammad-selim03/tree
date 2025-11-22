@@ -28,6 +28,11 @@ const SearchListingsSchema = z.object({
   pageSize: z.number().int().positive().max(100).optional(),
 });
 
+// Handle CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200 });
+}
+
 /**
  * POST /api/v1/listings
  * Create a new listing (PROTECTED - Requires SELLER role)
@@ -35,8 +40,10 @@ const SearchListingsSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate and check role
+    // 1. Authenticate and check role
     const authenticatedUser = await requireSeller(request);
-    
+    console.log('User authenticated for create listing:', authenticatedUser);
+
     // 2. Parse and validate request body
     const body = await request.json();
     const validatedData = CreateListingSchema.parse(body);
@@ -85,11 +92,11 @@ export async function GET(request: NextRequest) {
   try {
     // 1. Parse query parameters
     const searchParams = request.nextUrl.searchParams;
-    
+
     const queryData = {
       speciesId: searchParams.get('speciesId') || undefined,
       sellerId: searchParams.get('sellerId') || undefined,
-      status: searchParams.get('status') || undefined,
+      status: searchParams.get('status')?.toUpperCase() || undefined,
       minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
       maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
       searchTerm: searchParams.get('searchTerm') || undefined,

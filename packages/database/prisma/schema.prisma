@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [vector]
+  // extensions = [vector]
 }
 
 // --- Identity Context ---
@@ -155,7 +155,7 @@ model ListingImage {
   
   listing       Listing  @relation(fields: [listingId], references: [id])
   imageAnalysis ImageAnalysis?
-  embedding     Embedding?
+  // embedding     Embedding?
   
   @@index([listingId])
 }
@@ -321,17 +321,17 @@ enum VerificationStatus {
   FLAGGED
 }
 
-model Embedding {
-  id        String        @id @default(uuid())
-  imageId   String        @unique
-  vector    Unsupported("vector(512)") // pgvector type
-  model     String        @default("clip-vit-base-patch32")
-  createdAt DateTime      @default(now())
-  
-  image     ListingImage  @relation(fields: [imageId], references: [id])
-  
-  @@index([vector], name: "embedding_vector_idx", type: Gist) // Using Gist or HNSW for vector search
-}
+// model Embedding {
+//   id        String        @id @default(uuid())
+//   imageId   String        @unique
+//   vector    Unsupported("vector(512)") // pgvector type
+//   model     String        @default("clip-vit-base-patch32")
+//   createdAt DateTime      @default(now())
+//   
+//   image     ListingImage  @relation(fields: [imageId], references: [id])
+//   
+//   @@index([vector], name: "embedding_vector_idx", type: Gist) // Using Gist or HNSW for vector search
+// }
 
 model AICarePlan {
   id                String   @id @default(uuid())

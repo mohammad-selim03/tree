@@ -1,0 +1,47 @@
+[00:00:04.758] Server  LOG      ✓ Ready in 3.3s
+[00:00:28.066] Server  LOG      ○ Compiling / ...
+[00:00:49.130] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/apps/web/...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="geistsans_d025f23b-module__btTCTG__variable geistmono_df95d851-module__CWPfka__..."
+-                           cz-shortcut-listen="true"
+                          >
+                  ...
+
+[00:01:26.158] Server  LOG     prisma:query "SELECT COUNT(*) FROM (SELECT \"public\".\"Listing\".\"id\" FROM \"public\".\"Listing\" WHERE (\"public\".\"Listing\".\"deletedAt\" IS NULL AND \"public\".\"Listing\".\"status\" = CAST($1::text AS \"public\".\"ListingStatus\")) OFFSET $2) AS \"sub\""
+[00:01:26.200] Server  LOG     prisma:query "SELECT \"public\".\"Listing\".\"id\", \"public\".\"Listing\".\"sellerId\", \"public\".\"Listing\".\"speciesId\", \"public\".\"Listing\".\"title\", \"public\".\"Listing\".\"description\", \"public\".\"Listing\".\"basePrice\", \"public\".\"Listing\".\"inventory\", \"public\".\"Listing\".\"status\"::text, \"public\".\"Listing\".\"viewCount\", \"public\".\"Listing\".\"metadata\", \"public\".\"Listing\".\"createdAt\", \"public\".\"Listing\".\"updatedAt\", \"public\".\"Listing\".\"publishedAt\", \"public\".\"Listing\".\"deletedAt\" FROM \"public\".\"Listing\" WHERE (\"public\".\"Listing\".\"deletedAt\" IS NULL AND \"public\".\"Listing\".\"status\" = CAST($1::text AS \"public\".\"ListingStatus\")) ORDER BY \"public\".\"Listing\".\"publishedAt\"DESC NULLS LAST LIMIT $2 OFFSET $3"
+[00:02:04.046] Browser ERROR   A param property was accessed directly with `params.id`. `params` is a Promise and must be unwrapped with `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+[00:02:04.046] Browser ERROR   A param property was accessed directly with `params.id`. `params` is a Promise and must be unwrapped with `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
