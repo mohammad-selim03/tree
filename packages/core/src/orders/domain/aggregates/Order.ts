@@ -25,7 +25,7 @@ export interface OrderProps {
   orderNumber: OrderNumber;
   buyerId: string;
   sellerId: string;
-  items: Order Item[];
+  items: OrderItem[];
   totalAmount: Money;
   shippingAddress: ShippingAddress;
   status: OrderStatus;
@@ -51,7 +51,7 @@ export class Order {
   /**
    * Create a new order
    */
-  public static create(props: Omit<OrderProps, 'id' | 'orderNumber' | 'status' | 'createdAt' | 'updatedAt'>): Order {
+  public static create(props: Omit<OrderProps, 'id' | 'orderNumber' | 'status' | 'totalAmount' | 'createdAt' | 'updatedAt'>): Order {
     // Validate
     Order.validate(props);
 
@@ -216,7 +216,7 @@ export class Order {
   public startProcessing(): void {
     if (this.status !== OrderStatus.PAID) {
       throw new Error('Only paid orders can be processed');
-}
+    }
 
     this.props.status = OrderStatus.PROCESSING;
     this.props.updatedAt = new Date();

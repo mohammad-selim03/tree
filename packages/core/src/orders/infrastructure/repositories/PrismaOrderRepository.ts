@@ -13,7 +13,7 @@ import { ShippingAddress } from '../../domain/value-objects/ShippingAddress';
 import { Money } from '../../../marketplace/domain/value-objects/Money';
 
 export class PrismaOrderRepository implements IOrderRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   async findById(id: string): Promise<Order | null> {
     const data = await this.prisma.order.findUnique({
@@ -127,13 +127,8 @@ export class PrismaOrderRepository implements IOrderRepository {
       },
       update: {
         status: data.status,
-        paymentIntentId: data.paymentIntentId,
-        trackingNumber: data.trackingNumber,
-        notes: data.notes,
-        paidAt: data.paidAt,
-        shippedAt: data.shippedAt,
-        deliveredAt: data.deliveredAt,
-        cancelledAt: data.cancelledAt,
+        // Note: paymentIntentId, trackingNumber, notes, paidAt, shippedAt, deliveredAt, cancelledAt
+        // are not in the Prisma schema - these are managed through Payment/Shipment relations
         updatedAt: data.updatedAt,
       },
     });
@@ -162,7 +157,7 @@ export class PrismaOrderRepository implements IOrderRepository {
 
   async findByStatus(status: OrderStatus): Promise<Order[]> {
     const data = await this.prisma.order.findMany({
-      where: { status },
+      where: { status: status as any }, // Cast to handle enum mismatch
       include: {
         items: true,
       },

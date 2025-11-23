@@ -12,18 +12,17 @@ export { SKU } from './domain/value-objects/SKU';
 export { Seller, type SellerProps } from './domain/entities/Seller';
 
 // Aggregates
-export { 
-  Listing, 
-  ListingStatus, 
-  type ListingProps,
-  type DomainEvent 
+export {
+  Listing,
+  ListingStatus,
+  type ListingProps
 } from './domain/aggregates/Listing';
 
 // Repository Interfaces
-export { 
+export {
   type IListingRepository,
   type ListingSearchFilters,
-  type ListingSearchResult 
+  type ListingSearchResult
 } from './domain/repositories/IListingRepository';
 export { type ISellerRepository } from './domain/repositories/ISellerRepository';
 

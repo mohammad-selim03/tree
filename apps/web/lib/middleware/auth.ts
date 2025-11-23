@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { TokenService } from '@repo/core/identity/domain/services/TokenService';
+import { TokenService } from '@repo/core/identity';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {

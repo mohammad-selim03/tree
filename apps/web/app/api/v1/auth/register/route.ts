@@ -7,9 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { RegisterUserUseCase } from '@repo/core/identity/application/use-cases/RegisterUserUseCase';
-import { PrismaUserRepository } from '@repo/core/identity/infrastructure/repositories/PrismaUserRepository';
-import { TokenService } from '@repo/core/identity/domain/services/TokenService';
+import { RegisterUserUseCase, PrismaUserRepository, TokenService } from '@repo/core/identity';
 
 const RegisterSchema = z.object({
   email: z.string().email('Invalid email format'),

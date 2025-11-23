@@ -41,3 +41,5 @@ export { CreateOrderUseCase } from './application/use-cases/CreateOrderUseCase';
 export { GetOrderUseCase } from './application/use-cases/GetOrderUseCase';
 export { GetOrderHistoryUseCase } from './application/use-cases/GetOrderHistoryUseCase';
 export { CancelOrderUseCase } from './application/use-cases/CancelOrderUseCase';
+export { ShipOrderUseCase } from './application/use-cases/ShipOrderUseCase';
+export { MarkOrderDeliveredUseCase } from './application/use-cases/MarkOrderDeliveredUseCase';
