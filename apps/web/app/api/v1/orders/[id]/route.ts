@@ -6,8 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@repo/database';
-import { GetOrderUseCase } from '@repo/core/orders/application/use-cases/GetOrderUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
+import { GetOrderUseCase, PrismaOrderRepository } from '@repo/core/orders';
 import { requireAuthenticated } from '@/lib/middleware/auth';
 
 /**
@@ -16,18 +15,21 @@ import { requireAuthenticated } from '@/lib/middleware/auth';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate
     const user = await requireAuthenticated(request);
 
-    // 2. Initialize dependencies
+    // 2. Await params (Next.js 15+ requirement)
+    const { id } = await params;
+
+    // 3. Initialize dependencies
     const orderRepository = new PrismaOrderRepository(prisma);
     const useCase = new GetOrderUseCase(orderRepository);
 
-    // 3. Execute use case
-    const result = await useCase.execute(params.id, user.userId);
+    // 4. Execute use case
+    const result = await useCase.execute(id, user.userId);
 
     // 4. Return success response
     return NextResponse.json({

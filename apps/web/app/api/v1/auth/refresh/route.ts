@@ -7,9 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { RefreshTokenUseCase } from '@repo/core/identity/application/use-cases/RefreshTokenUseCase';
-import { PrismaUserRepository } from '@repo/core/identity/infrastructure/repositories/PrismaUserRepository';
-import { TokenService } from '@repo/core/identity/domain/services/TokenService';
+import { RefreshTokenUseCase, PrismaUserRepository, TokenService } from '@repo/core/identity';
 
 const RefreshSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),

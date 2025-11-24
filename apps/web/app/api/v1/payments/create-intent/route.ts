@@ -7,9 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { CreatePaymentIntentUseCase } from '@repo/core/payments/application/use-cases/CreatePaymentIntentUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
-import { StripePaymentService } from '@repo/core/payments/domain/services/StripePaymentService';
+import { CreatePaymentIntentUseCase, StripePaymentService } from '@repo/core/payments';
+import { PrismaOrderRepository } from '@repo/core/orders';
 import { requireAuthenticated } from '@/lib/middleware/auth';
 
 const CreatePaymentIntentSchema = z.object({

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { CreateListingUseCase } from '@repo/core/marketplace/application/use-cases/CreateListingUseCase';
-import { SearchListingsUseCase } from '@repo/core/marketplace/application/use-cases/SearchListingsUseCase';
-import { PrismaListingRepository } from '@repo/core/marketplace/infrastructure/repositories/PrismaListingRepository';
-import { PrismaSellerRepository } from '@repo/core/marketplace/infrastructure/repositories/PrismaSellerRepository';
+import { CreateListingUseCase, SearchListingsUseCase, PrismaListingRepository, PrismaSellerRepository } from '@repo/core/marketplace';
 import { requireSeller } from '@/lib/middleware/auth';
 
 // Validation Schemas

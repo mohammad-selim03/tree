@@ -7,8 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { PublishListingUseCase } from '@repo/core/marketplace/application/use-cases/PublishListingUseCase';
-import { PrismaListingRepository } from '@repo/core/marketplace/infrastructure/repositories/PrismaListingRepository';
+import { PublishListingUseCase, PrismaListingRepository } from '@repo/core/marketplace';
 
 const PublishListingSchema = z.object({
   sellerId: z.string().uuid('Invalid seller ID format'),
@@ -20,10 +19,11 @@ const PublishListingSchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    // Await params (Next.js 15+ requirement)
+    const { id } = await params;
 
     // Validate listing ID format
     if (!z.string().uuid().safeParse(id).success) {

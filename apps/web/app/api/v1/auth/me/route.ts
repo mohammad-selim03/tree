@@ -7,8 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@repo/database';
-import { GetUserProfileUseCase } from '@repo/core/identity/application/use-cases/GetUserProfileUseCase';
-import { PrismaUserRepository } from '@repo/core/identity/infrastructure/repositories/PrismaUserRepository';
+import { GetUserProfileUseCase, PrismaUserRepository } from '@repo/core/identity';
 import { authenticateRequest } from '@/lib/middleware/auth';
 
 export async function GET(request: NextRequest) {

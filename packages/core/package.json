@@ -4,9 +4,13 @@
     "private": true,
     "exports": {
         ".": "./src/index.ts",
+        "./marketplace": "./src/marketplace/index.ts",
         "./marketplace/*": "./src/marketplace/*",
+        "./identity": "./src/identity/index.ts",
         "./identity/*": "./src/identity/*",
+        "./orders": "./src/orders/index.ts",
         "./orders/*": "./src/orders/*",
+        "./payments": "./src/payments/index.ts",
         "./payments/*": "./src/payments/*"
     },
     "typesVersions": {
@@ -20,6 +24,7 @@
         "build": "tsc",
         "dev": "tsc --watch",
         "lint": "eslint . --max-warnings 0",
+        "check-types": "tsc --noEmit",
         "test": "jest"
     },
     "dependencies": {

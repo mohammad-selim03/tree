@@ -10,7 +10,7 @@ import { User, UserRole } from '../../domain/entities/User';
 import { Email } from '../../domain/value-objects/Email';
 
 export class PrismaUserRepository implements IUserRepository {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: PrismaClient) { }
 
   async findById(id: string): Promise<User | null> {
     const data = await this.prisma.user.findUnique({
@@ -69,7 +69,7 @@ export class PrismaUserRepository implements IUserRepository {
   async findByRole(role: string): Promise<User[]> {
     const data = await this.prisma.user.findMany({
       where: {
-        role: role,
+        role: role as any, // Prisma enum type handling
         deletedAt: null,
       },
       orderBy: { createdAt: 'desc' },
@@ -103,7 +103,7 @@ export class PrismaUserRepository implements IUserRepository {
    */
   private toPersistence(user: User): any {
     const props = user.getProps();
-    
+
     return {
       id: user.id,
       email: user.email.getValue(),

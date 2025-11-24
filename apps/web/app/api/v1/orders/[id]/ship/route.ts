@@ -7,8 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { ShipOrderUseCase } from '@repo/core/orders/application/use-cases/ShipOrderUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
+import { ShipOrderUseCase, PrismaOrderRepository } from '@repo/core/orders';
 import { requireSeller } from '@/lib/middleware/auth';
 
 const ShipOrderSchema = z.object({
@@ -23,7 +22,7 @@ const ShipOrderSchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate and check role
@@ -33,12 +32,15 @@ export async function POST(
     const body = await request.json();
     const validatedData = ShipOrderSchema.parse(body);
 
-    // 3. Initialize dependencies
+    // 3. Await params (Next.js 15+ requirement)
+    const { id } = await params;
+
+    // 4. Initialize dependencies
     const orderRepository = new PrismaOrderRepository(prisma);
     const useCase = new ShipOrderUseCase(orderRepository);
 
-    // 4. Execute use case
-    const result = await useCase.execute(params.id, user.userId, validatedData);
+    // 5. Execute use case
+    const result = await useCase.execute(id, user.userId, validatedData);
 
     // 5. Return success response
     return NextResponse.json({

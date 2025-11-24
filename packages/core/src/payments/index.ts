@@ -26,3 +26,5 @@ export {
   type CreatePaymentIntentDTO,
   type PaymentIntentResponseDTO,
 } from './application/use-cases/CreatePaymentIntentUseCase';
+
+export { ProcessPaymentWebhookUseCase } from './application/use-cases/ProcessPaymentWebhookUseCase';

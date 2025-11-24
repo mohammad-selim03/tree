@@ -7,9 +7,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@repo/database';
-import { ProcessPaymentWebhookUseCase } from '@repo/core/payments/application/use-cases/ProcessPaymentWebhookUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
-import { StripePaymentService } from '@repo/core/payments/domain/services/StripePaymentService';
+import { ProcessPaymentWebhookUseCase, StripePaymentService } from '@repo/core/payments';
+import { PrismaOrderRepository } from '@repo/core/orders';
 
 /**
  * POST /api/v1/payments/webhook
@@ -59,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Webhook processing error:', error);
-    
+
     // Still return 200 to Stripe to prevent retries for permanent errors
     // Log the error for investigation
     return NextResponse.json(

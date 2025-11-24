@@ -7,9 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { CancelOrderUseCase } from '@repo/core/orders/application/use-cases/CancelOrderUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
-import { PrismaListingRepository } from '@repo/core/marketplace/infrastructure/repositories/PrismaListingRepository';
+import { CancelOrderUseCase, PrismaOrderRepository } from '@repo/core/orders';
+import { PrismaListingRepository } from '@repo/core/marketplace';
 import { requireAuthenticated } from '@/lib/middleware/auth';
 
 const CancelOrderSchema = z.object({
@@ -22,7 +21,7 @@ const CancelOrderSchema = z.object({
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate
@@ -32,13 +31,16 @@ export async function POST(
     const body = await request.json();
     const validatedData = CancelOrderSchema.parse(body);
 
-    // 3. Initialize dependencies
+    // 3. Await params (Next.js 15+ requirement)
+    const { id } = await params;
+
+    // 4. Initialize dependencies
     const orderRepository = new PrismaOrderRepository(prisma);
     const listingRepository = new PrismaListingRepository(prisma);
     const useCase = new CancelOrderUseCase(orderRepository, listingRepository);
 
-    // 4. Execute use case
-    const result = await useCase.execute(params.id, user.userId, validatedData.reason);
+    // 5. Execute use case
+    const result = await useCase.execute(id, user.userId, validatedData.reason);
 
     // 5. Return success response
     return NextResponse.json({

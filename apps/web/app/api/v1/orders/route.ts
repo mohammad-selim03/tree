@@ -8,10 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@repo/database';
-import { CreateOrderUseCase } from '@repo/core/orders/application/use-cases/CreateOrderUseCase';
-import { GetOrderHistoryUseCase } from '@repo/core/orders/application/use-cases/GetOrderHistoryUseCase';
-import { PrismaOrderRepository } from '@repo/core/orders/infrastructure/repositories/PrismaOrderRepository';
-import { PrismaListingRepository } from '@repo/core/marketplace/infrastructure/repositories/PrismaListingRepository';
+import { CreateOrderUseCase, GetOrderHistoryUseCase, PrismaOrderRepository } from '@repo/core/orders';
+import { PrismaListingRepository } from '@repo/core/marketplace';
 import { requireAuthenticated } from '@/lib/middleware/auth';
 
 // Validation Schemas
