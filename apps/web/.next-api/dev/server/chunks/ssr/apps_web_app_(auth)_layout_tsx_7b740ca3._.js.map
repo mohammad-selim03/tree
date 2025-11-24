@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///J:/projects/tree/apps/web/app/%28auth%29/layout.tsx"],"sourcesContent":["export default function AuthLayout({\r\n    children,\r\n}: {\r\n    children: React.ReactNode\r\n}) {\r\n    return (\r\n        <div className=\"min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 p-4\">\r\n            <div className=\"w-full max-w-md animate-in fade-in zoom-in duration-500\">\r\n                {children}\r\n            </div>\r\n        </div>\r\n    )\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS,WAAW,EAC/B,QAAQ,EAGX;IACG,qBACI,6WAAC;QAAI,WAAU;kBACX,cAAA,6WAAC;YAAI,WAAU;sBACV;;;;;;;;;;;AAIjB"}}]
-}
