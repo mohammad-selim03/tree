@@ -15,6 +15,7 @@ const CreateListingSchema = z.object({
   basePrice: z.number().positive('Price must be positive'),
   inventory: z.number().int().min(0, 'Inventory cannot be negative'),
   metadata: z.object({}).optional(),
+  images: z.array(z.string().url('Invalid image URL')).min(1, 'At least one image is required').max(6, 'Maximum 6 images allowed').optional(),
 });
 
 const SearchListingsSchema = z.object({
@@ -40,12 +41,12 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate and check role
-    // 1. Authenticate and check role
     const authenticatedUser = await requireSeller(request);
     console.log('User authenticated for create listing:', authenticatedUser);
 
     // 2. Parse and validate request body
     const body = await request.json();
+    const { images, ...listingData } = body;
     const validatedData = CreateListingSchema.parse(body);
 
     // 3. Initialize repositories and use case
@@ -55,15 +56,83 @@ export async function POST(request: NextRequest) {
 
     // 4. Execute use case with authenticated user's ID
     const result = await useCase.execute({
-      ...validatedData,
+      ...listingData,
       sellerId: authenticatedUser.userId, // Use authenticated user's ID, not from request body
     });
 
-    // 5. Return success response
+    // 5. Save images to database if provided
+    // 5. Save images to database if provided
+    if (images && images.length > 0) {
+      // Create images
+      await prisma.listingImage.createMany({
+        data: images.map((url: string, index: number) => ({
+          listingId: result.id,
+          url: url,
+          order: index,
+          altText: `${result.title} - Image ${index + 1}`,
+        })),
+      });
+
+      console.log(`Saved ${images.length} images for listing ${result.id}`);
+
+      // Queue background jobs for species verification
+      try {
+        // Dynamic import to avoid build issues if worker deps are missing
+        const { getQueue, QUEUE_NAMES } = await import('@/lib/queue/config');
+        const verificationQueue = getQueue(QUEUE_NAMES.SPECIES_VERIFICATION);
+
+        // Fetch the created images to get their IDs
+        const createdImages = await prisma.listingImage.findMany({
+          where: { listingId: result.id },
+        });
+
+        // Add jobs to queue
+        const jobPromises = createdImages.map((image) => 
+          verificationQueue.add('verify-species', {
+            listingId: result.id,
+            imageId: image.id,
+            imageUrl: image.url,
+          })
+        );
+
+        await Promise.all(jobPromises);
+        console.log(`🚀 Queued ${jobPromises.length} verification jobs`);
+      } catch (queueError) {
+        console.error('❌ Failed to queue verification jobs:', queueError);
+        // Don't fail the request, just log the error
+      }
+    }
+
+    // 6. Fetch listing with images
+    const listingWithImages = await prisma.listing.findUnique({
+      where: { id: result.id },
+      include: {
+        images: {
+          orderBy: { order: 'asc' },
+        },
+        seller: {
+          select: {
+            id: true,
+            businessName: true,
+            verified: true,
+            rating: true,
+          },
+        },
+        species: {
+          select: {
+            id: true,
+            scientificName: true,
+            commonName: true,
+          },
+        },
+      },
+    });
+
+    // 7. Return success response
     return NextResponse.json(
       {
         success: true,
-        data: result,
+        data: listingWithImages,
         message: 'Listing created successfully',
       },
       { status: 201 }
@@ -114,10 +183,53 @@ export async function GET(request: NextRequest) {
     // 4. Execute use case
     const result = await useCase.execute(validatedData);
 
-    // 5. Return success response
+    // 5. Fetch images for the listings (Presentation Layer enrichment)
+    const listingIds = result.listings.map(l => l.id);
+    
+    const images = await prisma.listingImage.findMany({
+      where: { listingId: { in: listingIds } },
+      orderBy: { order: 'asc' },
+      include: {
+        imageAnalysis: true, // Include AI analysis data!
+      },
+    });
+
+    // 6. Attach images to listings
+    const listingsWithImages = result.listings.map(listing => {
+      const listingImages = images.filter(img => img.listingId === listing.id);
+      return {
+        ...listing, // Spread domain entity properties
+        // Manually map domain properties to JSON since spread on class instance might miss getters
+        id: listing.id,
+        title: listing.title,
+        description: listing.description,
+        basePrice: listing.basePrice.getAmount(),
+        currency: listing.basePrice.getCurrency(),
+        inventory: listing.inventory,
+        status: listing.status,
+        sellerId: listing.sellerId,
+        speciesId: listing.speciesId,
+        createdAt: listing.createdAt,
+        images: listingImages.map(img => ({
+          id: img.id,
+          url: img.url,
+          altText: img.altText,
+          analysis: img.imageAnalysis ? {
+            status: img.imageAnalysis.verificationStatus,
+            topPrediction: img.imageAnalysis.topPrediction,
+            confidence: img.imageAnalysis.confidence,
+          } : null,
+        })),
+      };
+    });
+
+    // 7. Return success response
     return NextResponse.json({
       success: true,
-      data: result,
+      data: {
+        ...result,
+        listings: listingsWithImages,
+      },
     });
   } catch (error) {
     return handleError(error);

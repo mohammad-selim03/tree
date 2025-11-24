@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -28,10 +29,12 @@ import {
 } from "@/components/ui/card"
 import { listingSchema, ListingFormData } from "@/lib/validations/listing"
 import { useCreateListing } from "@/lib/hooks/queries/useListings"
+import { ImageUpload } from "@/components/ImageUpload"
 
 export default function CreateListingPage() {
     const router = useRouter()
     const { mutate: createListing, isPending } = useCreateListing()
+    const [images, setImages] = useState<string[]>([])
 
     const {
         register,
@@ -47,7 +50,19 @@ export default function CreateListingPage() {
     })
 
     const onSubmit = (data: ListingFormData) => {
-        createListing(data as any, {
+        // Validate images
+        if (images.length === 0) {
+            toast.error("Pleas upload at least one image")
+            return
+        }
+
+        // Create payload with images
+        const payload = {
+            ...data,
+            images,
+        }
+
+        createListing(payload as any, {
             onSuccess: () => {
                 toast.success("Listing created successfully!")
                 router.push("/seller/listings")
@@ -204,17 +219,15 @@ export default function CreateListingPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Images</CardTitle>
-                                <CardDescription>Upload product images</CardDescription>
+                                <CardDescription>Upload up to 6 product images</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="border-2 border-dashed rounded-lg p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <Upload className="h-8 w-8 text-muted-foreground" />
-                                        <p className="text-sm text-muted-foreground">
-                                            Drag & drop or click to upload
-                                        </p>
-                                    </div>
-                                </div>
+                                <ImageUpload
+                                    value={images}
+                                    onChange={setImages}
+                                    maxImages={6}
+                                    disabled={isPending}
+                                />
                             </CardContent>
                         </Card>
 

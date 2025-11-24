@@ -180,7 +180,14 @@ export default function TreesPage() {
             {!isLoading && !isError && filteredProducts.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product, index) => {
-                  const image = product.images?.[0] || '🌳'
+                  // Get image from database or use placeholder
+                  const hasImages = product.images && product.images.length > 0
+                  const imageUrl = hasImages && typeof product.images[0] === 'object'
+                    ? product.images[0].url
+                    : hasImages && typeof product.images[0] === 'string'
+                      ? product.images[0]
+                      : null
+                  const imageCount = Array.isArray(product.images) ? product.images.length : 0
                   const category = product.category || 'Tree'
 
                   return (
@@ -196,11 +203,45 @@ export default function TreesPage() {
                       {/* Card */}
                       <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:-translate-y-2 transition-all duration-500 group-hover:bg-white/10 group-hover:border-white/20">
                         {/* Image Container */}
-                        <div className="aspect-square bg-gradient-to-br from-green-900/20 to-emerald-900/20 flex items-center justify-center relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                          <div className="text-8xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 relative z-10">
-                            {image}
-                          </div>
+                        <div className="aspect-square bg-gradient-to-br from-green-900/20 to-emerald-900/20 relative overflow-hidden">
+                          {imageUrl ? (
+                            <>
+                              <img
+                                src={imageUrl}
+                                alt={product.title}
+                                className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                              {/* Image Count Badge */}
+                              {imageCount > 1 && (
+                                <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-sm text-white text-xs rounded-full border border-white/20">
+                                  +{imageCount - 1} more
+                                </div>
+                              )}
+
+                              {/* AI Verification Badge */}
+                              {product.images?.[0]?.analysis?.status === 'VERIFIED' && (
+                                <div className="absolute top-3 left-3 px-2 py-1 bg-green-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 z-10 border border-white/20">
+                                  <span>✨</span> Verified Species
+                                </div>
+                              )}
+
+                              {product.images?.[0]?.analysis?.status === 'MISMATCH' && (
+                                <div className="absolute top-3 left-3 px-2 py-1 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 z-10 border border-white/20">
+                                  <span>⚠️</span> Unverified
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            // Fallback for products without images
+                            <div className="flex items-center justify-center h-full">
+                              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                              <div className="text-8xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 relative z-10">
+                                🌳
+                              </div>
+                            </div>
+                          )}
 
                           {/* Wishlist Button */}
                           <button className="absolute top-4 right-4 p-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20 hover:scale-110">
